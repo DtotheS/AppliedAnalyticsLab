@@ -308,7 +308,7 @@ tr:last-child td { border-bottom: none; }
         <tr><td>Communication Sciences & Disorders (CSD)</td><td>34</td><td>GPA &lt; 2.0 after midterm</td><td>14.2%</td><td><span class="pill pill-red">High</span></td></tr>
         <tr><td>Nutrition and Hospitality Management (NHM)</td><td>28</td><td>Low credit accumulation</td><td>12.8%</td><td><span class="pill pill-red">High</span></td></tr>
         <tr><td>Social Work</td><td>25</td><td>Missed advising contact</td><td>10.5%</td><td><span class="pill pill-yellow">Medium</span></td></tr>
-        <tr><td>Health, Exercise Science, and Recreation Management (HSRM)</td><td>22</td><td>DFW in gateway courses</td><td>9.7%</td><td><span class="pill pill-yellow">Medium</span></td></tr>
+        <tr><td>Health, Exercise Science, and Recreation Management (HSREM)</td><td>22</td><td>DFW in gateway courses</td><td>9.7%</td><td><span class="pill pill-yellow">Medium</span></td></tr>
         <tr><td>Criminal Justice & Legal Studies (CJLS)</td><td>18</td><td>Below 12 hrs enrolled</td><td>8.1%</td><td><span class="pill pill-green">Low</span></td></tr>
       </tbody>
     </table>
@@ -337,8 +337,8 @@ tr:last-child td { border-bottom: none; }
       <div class="chart-wrap" style="height: 260px;"><canvas id="c3"></canvas></div>
       <div class="legend">
         <span class="legend-item"><span class="legend-dot" style="background:#2E75B6;"></span>Social Work</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#548235;"></span>HSRM</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#854F0B;"></span>Crim Justice</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#548235;"></span>HSREM</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#854F0B;"></span>CJLS</span>
         <span class="legend-item"><span class="legend-dot" style="background:#E24B4A;"></span>NHM</span>
         <span class="legend-item"><span class="legend-dot" style="background:#7F77DD;"></span>CSD</span>
         <span class="legend-item"><span class="legend-dot" style="background:#D85A30;"></span>Public Health</span>
@@ -829,7 +829,7 @@ const defaults = { responsive: true, maintainAspectRatio: false, plugins: { lege
 // 1a. Retention bar
 new Chart(document.getElementById('c1'), {
   type: 'bar',
-  data: { labels: ['CSD','NHM','Social Work','HESRM','CJLS','Pub Health'], datasets: [{ data: [81.5,82.3,85.1,86.0,88.4,78.9], backgroundColor: '#2E75B6', borderRadius: 4, barPercentage: 0.6 }] },
+  data: { labels: ['CSD','NHM','Social Work','HESRM','CJLS','Public Health'], datasets: [{ data: [81.5,82.3,85.1,86.0,88.4,78.9], backgroundColor: '#2E75B6', borderRadius: 4, barPercentage: 0.6 }] },
   options: { ...defaults, scales: { y: { min:70,max:95, grid:{color:gridC}, ticks:{color:txtC,font:{size:11}} }, x: { grid:{display:false}, ticks:{color:txtC,font:{size:11},autoSkip:false,maxRotation:30} } } },
   plugins: [{ afterDraw(c) { const ctx=c.ctx,y=c.scales.y.getPixelForValue(86.6),x=c.scales.x; ctx.save(); ctx.strokeStyle='#E24B4A'; ctx.lineWidth=1.5; ctx.setLineDash([6,4]); ctx.beginPath(); ctx.moveTo(x.left,y); ctx.lineTo(x.right,y); ctx.stroke(); ctx.fillStyle='#E24B4A'; ctx.font='11px sans-serif'; ctx.fillText('UM 86.6%',x.right-66,y-6); ctx.restore(); } }]
 });
@@ -846,7 +846,7 @@ new Chart(document.getElementById('c3'), {
     { label:'CJLS', data:[280,290,300,315,330,340,352,365], borderColor:'#854F0B', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
     { label:'NHM', data:[230,225,218,210,204,196,190,183], borderColor:'#E24B4A', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
     { label:'CSD', data:[202,203,204,205,206,207,208,209], borderColor:'#7F77DD', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
-    { label:'Pub Health', data:[195,185,174,164,153,143,133,124], borderColor:'#D85A30', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
+    { label:'Public Health', data:[195,185,174,164,153,143,133,124], borderColor:'#D85A30', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
   ] },
   options:{ ...defaults, scales:{ y:{min:100,max:450,grid:{color:gridC},ticks:{color:txtC,font:{size:11}}}, x:{grid:{display:false},ticks:{color:txtC,font:{size:11},autoSkip:false}} } }
 });
@@ -856,13 +856,13 @@ new Chart(document.getElementById('c4'), {
   type:'scatter',
   data:{ datasets:[{ data:[{x:12.3,y:-4.1},{x:15.1,y:-2.8},{x:10.2,y:1.2},{x:8.8,y:0.3},{x:5.9,y:2.5},{x:6.4,y:-5.3}], backgroundColor:['#2E75B6','#E24B4A','#548235','#7F77DD','#854F0B','#D85A30'], pointRadius:[18,12,16,14,15,11] }] },
   options:{ ...defaults, plugins:{legend:{display:false},tooltip:{enabled:false}}, scales:{x:{title:{display:true,text:'MS job growth 2024-34 (%)',color:txtC,font:{size:11}},min:3,max:18,grid:{color:gridC},ticks:{color:txtC,font:{size:11}}},y:{title:{display:true,text:'Enrollment change/yr (%)',color:txtC,font:{size:11}},min:-6,max:4,grid:{color:gridC},ticks:{color:txtC,font:{size:11}}}}, layout:{padding:20} },
-  plugins:[{ afterDraw(c) { const ctx=c.ctx,pts=c.getDatasetMeta(0).data,lbls=['Social Work','NHM','HESRM','CSD','CJLS','Pub Health']; ctx.font='11px sans-serif'; ctx.fillStyle=txtC; pts.forEach((p,i)=>ctx.fillText(lbls[i],p.x+14,p.y-6)); const y0=c.scales.y.getPixelForValue(0),xs=c.scales.x; ctx.strokeStyle='rgba(0,0,0,0.12)'; ctx.lineWidth=1; ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(xs.left,y0); ctx.lineTo(xs.right,y0); ctx.stroke(); ctx.setLineDash([]); } }]
+  plugins:[{ afterDraw(c) { const ctx=c.ctx,pts=c.getDatasetMeta(0).data,lbls=['Social Work','NHM','HESRM','CSD','CJLS','Public Health']; ctx.font='11px sans-serif'; ctx.fillStyle=txtC; pts.forEach((p,i)=>ctx.fillText(lbls[i],p.x+14,p.y-6)); const y0=c.scales.y.getPixelForValue(0),xs=c.scales.x; ctx.strokeStyle='rgba(0,0,0,0.12)'; ctx.lineWidth=1; ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(xs.left,y0); ctx.lineTo(xs.right,y0); ctx.stroke(); ctx.setLineDash([]); } }]
 });
 
 // 3a. Teaching load
 new Chart(document.getElementById('c5'), {
   type:'bar',
-  data:{ labels:['Social Work','CSD','NHM','HESRM','CJLS','Pub Health'], datasets:[
+  data:{ labels:['Social Work','CSD','NHM','HESRM','CJLS','Public Health'], datasets:[
     { label:'Max', data:[15,14,12,12,13,17], backgroundColor:'#E24B4A88', borderRadius:3, barPercentage:0.5 },
     { label:'Avg', data:[11.2,10.8,10.5,9.8,11.5,12.3], backgroundColor:'#2E75B6', borderRadius:3, barPercentage:0.5 },
     { label:'Min', data:[6,8,9,6,10,5], backgroundColor:'#73726c88', borderRadius:3, barPercentage:0.5 },
@@ -873,7 +873,7 @@ new Chart(document.getElementById('c5'), {
 // 3b. Retirement
 new Chart(document.getElementById('c6'), {
   type:'bar',
-  data:{ labels:['Social Work','CSD','NHM','HESRM','CJLS','Pub Health'], datasets:[
+  data:{ labels:['Social Work','CSD','NHM','HESRM','CJLS','Public Health'], datasets:[
     { label:'26-27', data:[1,0,1,2,0,2], backgroundColor:'#EF9F27', borderRadius:3, barPercentage:0.6 },
     { label:'28-29', data:[2,1,0,1,1,3], backgroundColor:'#D85A30', borderRadius:3, barPercentage:0.6 },
     { label:'30-31', data:[1,2,1,1,0,2], backgroundColor:'#993C1D', borderRadius:3, barPercentage:0.6 },
@@ -886,13 +886,13 @@ new Chart(document.getElementById('c7'), {
   type:'bubble',
   data:{ datasets:[{ data:[{x:352,y:55.2,r:12},{x:204,y:52.8,r:10},{x:348,y:41.5,r:14},{x:210,y:46.3,r:11},{x:330,y:43.0,r:16},{x:158,y:59.1,r:7}], backgroundColor:['#2E75B6aa','#E24B4Aaa','#548235aa','#854F0Baa','#7F77DDaa','#D85A30aa'] }] },
   options:{ ...defaults, plugins:{legend:{display:false},tooltip:{enabled:false}}, scales:{x:{title:{display:true,text:'Enrollment',color:txtC,font:{size:11}},min:150,max:400,grid:{color:gridC},ticks:{color:txtC,font:{size:11}}},y:{title:{display:true,text:'Cost per degree ($K)',color:txtC,font:{size:11}},min:35,max:60,grid:{color:gridC},ticks:{color:txtC,font:{size:11}}}}, layout:{padding:20} },
-  plugins:[{ afterDraw(c) { const ctx=c.ctx,pts=c.getDatasetMeta(0).data,lbls=['Social Work','CSD','NHM','HESRM','CJLS','Pub Health']; ctx.font='11px sans-serif'; ctx.fillStyle=txtC; pts.forEach((p,i)=>ctx.fillText(lbls[i],p.x+12,p.y-8)); } }]
+  plugins:[{ afterDraw(c) { const ctx=c.ctx,pts=c.getDatasetMeta(0).data,lbls=['Social Work','CSD','NHM','HESRM','CJLS','Public Health']; ctx.font='11px sans-serif'; ctx.fillStyle=txtC; pts.forEach((p,i)=>ctx.fillText(lbls[i],p.x+12,p.y-8)); } }]
 });
 
 // 4b. Revenue waterfall
 new Chart(document.getElementById('c8'), {
   type:'bar',
-  data:{ labels:['Social Work -15%','NHM -10%','HESRM +5%','CSD -5%','CJLS +10%','Pub Health -20%'], datasets:[{ data:[-420,-180,150,-95,280,-560], backgroundColor:ctx=>ctx.raw<0?'#E24B4Aaa':'#548235aa', borderRadius:4, barPercentage:0.6 }] },
+  data:{ labels:['Social Work -15%','NHM -10%','HESRM +5%','CSD -5%','CJLS +10%','Public Health -20%'], datasets:[{ data:[-420,-180,150,-95,280,-560], backgroundColor:ctx=>ctx.raw<0?'#E24B4Aaa':'#548235aa', borderRadius:4, barPercentage:0.6 }] },
   options:{ ...defaults, scales:{ y:{grid:{color:gridC},ticks:{color:txtC,font:{size:11},callback:v=>(v<0?'-':'')+'$'+Math.abs(v)+'K'}}, x:{grid:{display:false},ticks:{color:txtC,font:{size:9},autoSkip:false,maxRotation:35}} } }
 });
 
@@ -930,7 +930,7 @@ new Chart(document.getElementById('c13'), {
       { label:'HESRM',        data:[560,590,640,700,760,830,900,980,1060,1140],  backgroundColor:'#548235aa', stack:'s', yAxisID:'y' },
       { label:'CSD',          data:[380,390,400,410,420,430,445,460,475,490],   backgroundColor:'#7F77DDaa', stack:'s', yAxisID:'y' },
       { label:'CJLS',         data:[480,530,590,650,720,800,880,960,1050,1150], backgroundColor:'#854F0Baa', stack:'s', yAxisID:'y' },
-      { label:'Pub Health',   data:[180,220,270,330,390,460,530,620,720,820],   backgroundColor:'#D85A30aa', stack:'s', yAxisID:'y' },
+      { label:'Public Health',   data:[180,220,270,330,390,460,530,620,720,820],   backgroundColor:'#D85A30aa', stack:'s', yAxisID:'y' },
       { label:'% of Revenue', type:'line', data:[13,14,15,16,17,18,20,21,23,25],
         borderColor:'#1F3864', borderWidth:2.5, pointRadius:3, pointBackgroundColor:'#1F3864',
         tension:0.3, yAxisID:'y2', fill:false,
@@ -1005,7 +1005,7 @@ new Chart(document.getElementById('c14'), {
     { label:'HESRM',       data:[560,590,640,700,760,830,900,980,1060,1140], borderColor:'#548235', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
     { label:'CSD',         data:[380,390,400,410,420,430,445,460,475,490], borderColor:'#7F77DD', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
     { label:'CJLS',        data:[480,530,590,650,720,800,880,960,1050,1150], borderColor:'#854F0B', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
-    { label:'Pub Health',  data:[180,220,270,330,390,460,530,620,720,820], borderColor:'#D85A30', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
+    { label:'Public Health',  data:[180,220,270,330,390,460,530,620,720,820], borderColor:'#D85A30', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
   ]},
   options:{ ...defaults, scales:{ y:{min:0,max:1500,grid:{color:gridC},ticks:{color:txtC,font:{size:11},callback:v=>'$'+v+'K'}}, x:{grid:{display:false},ticks:{color:txtC,font:{size:10},autoSkip:false}} } },
   plugins:[{ afterDraw(c) {
@@ -1018,7 +1018,7 @@ new Chart(document.getElementById('c14'), {
     ctx.setLineDash([]); ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.font='10px sans-serif';
     ctx.fillText('Projected →',xDiv+5,ys.top+13); ctx.restore();
     // label each line at the right end
-    const lbls=['Social Work','NHM','HESRM','CSD','CJLS','Pub Health'];
+    const lbls=['Social Work','NHM','HESRM','CSD','CJLS','Public Health'];
     const clrs=['#2E75B6','#E24B4A','#548235','#7F77DD','#854F0B','#D85A30'];
     c.data.datasets.forEach((ds,i)=>{
       const meta=c.getDatasetMeta(i); const last=meta.data[meta.data.length-1];
