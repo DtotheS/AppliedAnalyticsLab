@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Applied Analytics Lab — Visual Dashboard Prototypes</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --navy: #1F3864;
+  --blue: #2E75B6;
+  --blue-light: #D6E4F0;
+  --green: #548235;
+  --amber: #854F0B;
+  --red: #E24B4A;
+  --coral: #D85A30;
+  --purple: #7F77DD;
+  --gray-50: #F8F7F5;
+  --gray-100: #F0EEEB;
+  --gray-200: #E2E0DB;
+  --gray-400: #A8A59E;
+  --gray-600: #73726C;
+  --gray-800: #3D3D3A;
+  --font: 'DM Sans', -apple-system, sans-serif;
+  --font-serif: 'DM Serif Display', Georgia, serif;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  color: var(--gray-800);
+  background: var(--gray-50);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.funnel-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+  width: 100%;
+}
+
+.funnel-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.page-header {
+  background: var(--navy);
+  color: #fff;
+  padding: 60px 0 50px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.page-header::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse at 30% 20%, rgba(46,117,182,0.3) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 80%, rgba(127,119,221,0.15) 0%, transparent 50%);
+}
+.page-header > * { position: relative; }
+.page-header h1 {
+  font-family: var(--font-serif);
+  font-size: 42px;
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+.page-header .subtitle {
+  font-size: 17px;
+  opacity: 0.8;
+  font-weight: 400;
+}
+.page-header .meta {
+  margin-top: 20px;
+  font-size: 13px;
+  opacity: 0.55;
+}
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+.section {
+  margin: 48px 0;
+  animation: fadeUp 0.5s ease both;
+}
+.section:nth-child(2) { animation-delay: 0.05s; }
+.section:nth-child(3) { animation-delay: 0.1s; }
+.section:nth-child(4) { animation-delay: 0.15s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  background: var(--navy);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.section-title {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  color: var(--navy);
+  margin-bottom: 6px;
+  display: inline;
+  vertical-align: middle;
+}
+
+.section-desc {
+  font-size: 14px;
+  color: var(--gray-600);
+  margin: 8px 0 20px;
+  max-width: 700px;
+  line-height: 1.7;
+}
+
+.card {
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+}
+
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.metric {
+  background: var(--gray-50);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  border: 1px solid var(--gray-100);
+}
+.metric .label { font-size: 11px; color: var(--gray-400); font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+.metric .val { font-size: 24px; font-weight: 700; color: var(--gray-800); }
+.metric .delta { font-size: 11px; margin-top: 3px; }
+
+.metrics-3 { grid-template-columns: repeat(3, 1fr); }
+
+.up { color: var(--green); }
+.down { color: var(--red); }
+.warn { color: var(--amber); }
+
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.chart-wrap { position: relative; }
+
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--gray-200); color: var(--gray-400); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+td { padding: 8px 10px; border-bottom: 1px solid var(--gray-100); }
+tr:last-child td { border-bottom: none; }
+
+.pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.pill-red { background: #FCEBEB; color: #A32D2D; }
+.pill-yellow { background: #FAEEDA; color: #854F0B; }
+.pill-green { background: #EAF3DE; color: #3B6D11; }
+
+.status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 11px; color: var(--gray-600); margin-top: 10px; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+.funnel { display: flex; flex-direction: column; gap: 5px; align-items: center; padding: 10px 0; }
+.funnel-bar {
+  height: 36px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.2px;
+}
+
+.gauge-bg { height: 18px; background: var(--gray-100); border-radius: 9px; overflow: hidden; }
+.gauge-fill { height: 100%; border-radius: 9px; }
+
+.brief-card {
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.brief-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid var(--navy);
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+}
+
+.bar-bg { background: var(--gray-100); border-radius: 3px; height: 12px; width: 100%; }
+.bar-fill { height: 100%; border-radius: 3px; }
+
+.dept-dash { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: var(--gray-200);
+  margin: 48px 0;
+}
+
+.footer {
+  text-align: center;
+  padding: 40px 0 60px;
+  font-size: 13px;
+  color: var(--gray-400);
+}
+
+@media (max-width: 768px) {
+  .metrics, .charts, .dept-dash { grid-template-columns: 1fr; }
+  .metrics-3 { grid-template-columns: 1fr; }
+  .page-header h1 { font-size: 28px; }
+}
+
+@media print {
+  .page-header { padding: 30px 0; }
+  .section { break-inside: avoid; }
+  body { background: #fff; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="container">
+    <h1>Applied Analytics Lab</h1>
+    <div class="subtitle">Visual Dashboard Prototypes</div>
+    <div class="meta">School of Applied Sciences &bull; University of Mississippi &bull; March 2026 &bull; All data hypothetical &bull; Created by Dr. Sian Lee & Dr. Minsoo Kang</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ==================== 1. STUDENT SUCCESS ==================== -->
+<div class="section">
+  <div>
+    <span class="section-num">1</span>
+    <h2 class="section-title">Proactive student success interventions</h2>
+  </div>
+  <p class="section-desc">Early warning dashboard with metric cards (retention, at-risk count, DFW rate), department-level bar chart against the UM 86.6% baseline, risk-level doughnut chart, and a flagged-student detail table.</p>
+
+  <div class="metrics">
+    <div class="metric"><div class="label">SAS retention rate</div><div class="val">84.2%</div><div class="delta down">-2.4 pts vs. UM (86.6%)</div></div>
+    <div class="metric"><div class="label">Students flagged at-risk</div><div class="val warn">127</div><div class="delta">of 1,842 enrolled</div></div>
+    <div class="metric"><div class="label">DFW rate (this semester)</div><div class="val">11.3%</div><div class="delta down">+1.8 pts vs. last spring</div></div>
+    <div class="metric"><div class="label">Avg. time-to-degree</div><div class="val">4.6 yr</div><div class="delta up">-0.2 yr vs. 2023</div></div>
+  </div>
+
+  <div class="charts">
+    <div class="card">
+      <div class="card-title">Retention rate by SAS department vs. UM baseline</div>
+      <div class="chart-wrap" style="height: 240px;"><canvas id="c1"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">At-risk students by risk level</div>
+      <div class="chart-wrap" style="height: 240px;"><canvas id="c2"></canvas></div>
+      <div class="legend" style="justify-content: center;">
+        <span class="legend-item"><span class="legend-dot" style="background:#E24B4A;"></span>High risk 62</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#EF9F27;"></span>Medium risk 47</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#548235;"></span>Low risk 18</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">At-risk student detail (top flagged)</div>
+    <table>
+      <thead><tr><th>Department</th><th>Students flagged</th><th>Top risk factor</th><th>DFW rate</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Public Health</td><td>40</td><td>Multiple risk factors</td><td>17.1%</td><td><span class="pill pill-red">High</span></td></tr>
+        <tr><td>Communication Sciences & Disorders (CSD)</td><td>34</td><td>GPA &lt; 2.0 after midterm</td><td>14.2%</td><td><span class="pill pill-red">High</span></td></tr>
+        <tr><td>Nutrition and Hospitality Management (NHM)</td><td>28</td><td>Low credit accumulation</td><td>12.8%</td><td><span class="pill pill-red">High</span></td></tr>
+        <tr><td>Social Work</td><td>25</td><td>Missed advising contact</td><td>10.5%</td><td><span class="pill pill-yellow">Medium</span></td></tr>
+        <tr><td>Health, Exercise Science, and Recreation Management (HSRM)</td><td>22</td><td>DFW in gateway courses</td><td>9.7%</td><td><span class="pill pill-yellow">Medium</span></td></tr>
+        <tr><td>Criminal Justice & Legal Studies (CJLS)</td><td>18</td><td>Below 12 hrs enrolled</td><td>8.1%</td><td><span class="pill pill-green">Low</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ==================== 2. ENROLLMENT ==================== -->
+<div class="section">
+  <div>
+    <span class="section-num">2</span>
+    <h2 class="section-title">Strategic enrollment management</h2>
+  </div>
+  <p class="section-desc">3-year forecast line chart with dashed projections, a scatter plot mapping labor demand growth vs. enrollment change for each SAS program, and a program-market alignment table.</p>
+
+  <div class="metrics metrics-3">
+    <div class="metric"><div class="label">Total SAS enrollment (Fall 2025)</div><div class="val">1,842</div><div class="delta warn">Projected F2028: 1,710 (-7.2%)</div></div>
+    <div class="metric"><div class="label">Yield rate (SAS avg.)</div><div class="val">38.4%</div><div class="delta" style="color:var(--gray-600);">UM overall: 41.2%</div></div>
+    <div class="metric"><div class="label">Transfer pipeline</div><div class="val">214</div><div class="delta up">+12% from NW MS CC</div></div>
+  </div>
+
+  <div class="charts">
+    <div class="card">
+      <div class="card-title">Enrollment trend &amp; 3-year forecast by program</div>
+      <div class="chart-wrap" style="height: 260px;"><canvas id="c3"></canvas></div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#2E75B6;"></span>Social Work</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#548235;"></span>HSRM</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#854F0B;"></span>Crim Justice</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#E24B4A;"></span>NHM</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#7F77DD;"></span>CSD</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#D85A30;"></span>Public Health</span>
+        <span style="font-style: italic; color: var(--gray-400);">— — dashed = forecast</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">MS labor demand growth vs. SAS enrollment change</div>
+      <div class="chart-wrap" style="height: 260px;"><canvas id="c4"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Program–labor market alignment (Mississippi 2024–2034)</div>
+    <table>
+      <thead><tr><th>SAS program</th><th>Enrollment trend</th><th>MS job growth</th><th>Alignment</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Social Work</td><td class="down">-4.1%/yr</td><td><div class="bar-bg" style="width:120px; display:inline-block;"><div class="bar-fill" style="width:72%; background:var(--green);"></div></div> +12.3%</td><td><span class="pill pill-red">Misaligned</span></td><td>Enrollment falling; demand rising</td></tr>
+        <tr><td>Nutrition & Hospitality Management (NHM)</td><td class="down">-2.8%/yr</td><td><div class="bar-bg" style="width:120px; display:inline-block;"><div class="bar-fill" style="width:88%; background:var(--green);"></div></div> +15.1%</td><td><span class="pill pill-red">Misaligned</span></td><td>High-demand field losing students</td></tr>
+        <tr><td>Health, Exercise Science, and Recreation Management (HESRM)</td><td class="up">+1.2%/yr</td><td><div class="bar-bg" style="width:120px; display:inline-block;"><div class="bar-fill" style="width:60%; background:var(--green);"></div></div> +10.2%</td><td><span class="pill pill-green">Aligned</span></td><td>Growing with demand</td></tr>
+        <tr><td>Communication Sciences & Disorders (CSD)</td><td style="color:var(--gray-600);">+0.3%/yr</td><td><div class="bar-bg" style="width:120px; display:inline-block;"><div class="bar-fill" style="width:52%; background:var(--green);"></div></div> +8.8%</td><td><span class="pill pill-yellow">Moderate</span></td><td>Stable but below demand</td></tr>
+        <tr><td>Criminal Justice & Legal Studies (CJLS)</td><td class="up">+2.5%/yr</td><td><div class="bar-bg" style="width:120px; display:inline-block;"><div class="bar-fill" style="width:35%; background:var(--gray-400);"></div></div> +5.9%</td><td><span class="pill pill-green">Aligned</span></td><td>Enrollment exceeding pace</td></tr>
+        <tr><td>Public Health</td><td class="down">-5.3%/yr</td><td><div class="bar-bg" style="width:120px; display:inline-block;"><div class="bar-fill" style="width:46%; background:var(--gray-400);"></div></div> +7.8%</td><td><span class="pill pill-red">Misaligned</span></td><td>Steepest enrollment decline</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ==================== 3. WORKFORCE PLANNING ==================== -->
+<div class="section">
+  <div>
+    <span class="section-num">3</span>
+    <h2 class="section-title">Faculty &amp; staff workforce planning</h2>
+  </div>
+  <p class="section-desc">Teaching load equity chart (max/avg/min per department), stacked retirement forecast, and a workload equity flag table.</p>
+
+  <div class="charts">
+    <div class="card">
+      <div class="card-title">Teaching load per faculty (credit hours/semester)</div>
+      <div class="chart-wrap" style="height: 240px;"><canvas id="c5"></canvas></div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#E24B4A88;"></span>Max load</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#2E75B6;"></span>Avg load</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#73726c88;"></span>Min load</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Projected retirements by department (5-year)</div>
+      <div class="chart-wrap" style="height: 240px;"><canvas id="c6"></canvas></div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#EF9F27;"></span>2026–27</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#D85A30;"></span>2028–29</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#993C1D;"></span>2030–31</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Workload equity flags</div>
+    <table>
+      <thead><tr><th>Department</th><th>Faculty (FT)</th><th>Avg credit hrs</th><th>Max</th><th>Min</th><th>Equity ratio</th><th>Flag</th></tr></thead>
+      <tbody>
+        <tr><td>Social Work</td><td>14</td><td>11.2</td><td>15</td><td>6</td><td>2.50x</td><td><span class="pill pill-red">Inequitable</span></td></tr>
+        <tr><td>Communication Sciences & Disorders (CSD)</td><td>12</td><td>10.8</td><td>14</td><td>8</td><td>1.75x</td><td><span class="pill pill-yellow">Watch</span></td></tr>
+        <tr><td>Nutrition & Hospitality Management (NHM)</td><td>10</td><td>10.5</td><td>12</td><td>9</td><td>1.33x</td><td><span class="pill pill-green">Equitable</span></td></tr>
+        <tr><td>Health, Exercise Science, and Recreation Management (HESRM)</td><td>16</td><td>9.8</td><td>12</td><td>6</td><td>2.00x</td><td><span class="pill pill-yellow">Watch</span></td></tr>
+        <tr><td>Criminal Justice & Legal Studies (CJLS)</td><td>8</td><td>11.5</td><td>13</td><td>10</td><td>1.30x</td><td><span class="pill pill-green">Equitable</span></td></tr>
+        <tr><td>Public Health</td><td>7</td><td>12.3</td><td>17</td><td>5</td><td>3.40x</td><td><span class="pill pill-red">Inequitable</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ==================== 4. BUDGET ==================== -->
+<div class="section">
+  <div>
+    <span class="section-num">4</span>
+    <h2 class="section-title">Budget &amp; resource optimization</h2>
+  </div>
+  <p class="section-desc">Cost-per-degree bubble chart, revenue scenario waterfall, and summary metrics for grant portfolio and program cost targets.</p>
+
+  <div class="metrics">
+    <div class="metric"><div class="label">SAS total revenue</div><div class="val">$24.3M</div><div class="delta up">+3.1% vs. FY24</div></div>
+    <div class="metric"><div class="label">Avg. cost per degree</div><div class="val">$48.2K</div><div class="delta" style="color:var(--gray-600);">UM avg: $52.1K</div></div>
+    <div class="metric"><div class="label">Grant portfolio (active)</div><div class="val">$3.8M</div><div class="delta warn">62% burn rate</div></div>
+    <div class="metric"><div class="label">Programs above cost target</div><div class="val down">3 of 6</div><div class="delta">Communication Sciences & Disorders (CSD), Social Work, Public Health</div></div>
+  </div>
+
+  <div class="charts">
+    <div class="card">
+      <div class="card-title">Cost per degree vs. enrollment (bubble = graduation rate)</div>
+      <div class="chart-wrap" style="height: 260px;"><canvas id="c7"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Revenue impact: enrollment change scenario</div>
+      <div class="chart-wrap" style="height: 260px;"><canvas id="c8"></canvas></div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:8px; font-size:13px; font-weight:600; color:var(--gray-600); text-transform:uppercase; letter-spacing:0.5px;">Academic Outreach Revenue — Online Delivery + Intersession Classes</div>
+  <div class="charts" style="grid-template-columns: 1fr 1fr; align-items:start;">
+    <div class="card">
+      <div class="card-title">Total outreach &amp; share of SAS revenue</div>
+      <div style="font-size:11px; color:var(--gray-600); margin-bottom:8px;">Bars = total outreach ($K, left axis) &nbsp;|&nbsp; Navy line = % of total SAS revenue (right axis) &nbsp;|&nbsp; * = projected</div>
+      <div class="chart-wrap" style="height: 260px;"><canvas id="c13"></canvas></div>
+      <div class="legend" style="margin-top:8px;">
+        <span class="legend-item"><span class="legend-dot" style="background:#2E75B6aa;"></span>Social Work</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#E24B4Aaa;"></span>NHM</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#548235aa;"></span>HESRM</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#7F77DDaa;"></span>CSD</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#854F0Baa;"></span>CJLS</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#D85A30aa;"></span>Public Health</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#1F3864; width:18px; border-radius:2px;"></span>% of revenue</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Outreach revenue trend by department ($K)</div>
+      <div style="font-size:11px; color:var(--gray-600); margin-bottom:8px;">Each line = one department's outreach revenue &nbsp;|&nbsp; Dashed = projected</div>
+      <div class="chart-wrap" style="height: 260px;"><canvas id="c14"></canvas></div>
+      <div class="legend" style="margin-top:8px;">
+        <span class="legend-item"><span class="legend-dot" style="background:#2E75B6;"></span>Social Work</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#E24B4A;"></span>NHM</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#548235;"></span>HESRM</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#7F77DD;"></span>CSD</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#854F0B;"></span>CJLS</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#D85A30;"></span>Public Health</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ==================== 5. FUNDRAISING ==================== -->
+<div class="section">
+  <div>
+    <span class="section-num">5</span>
+    <h2 class="section-title">Donor development &amp; fundraising</h2>
+  </div>
+  <p class="section-desc">Donor funnel visualization, Innovation campus campaign gauge, and giving-by-source breakdown.</p>
+
+  <div class="charts">
+    <div class="card">
+      <div class="card-title">SAS alumni donor funnel</div>
+      <div class="funnel">
+        <div class="funnel-bar" style="width:100%; background:var(--blue);">Total alumni: 8,420</div>
+        <div class="funnel-bar" style="width:72%; background:#3266adcc;">Contactable: 6,062</div>
+        <div class="funnel-bar" style="width:45%; background:var(--green);">Engaged (event/email): 3,789</div>
+        <div class="funnel-bar" style="width:22%; background:#548235cc;">Solicited: 1,852</div>
+        <div class="funnel-bar" style="width:11%; background:var(--amber);">Donors: 926</div>
+        <div class="funnel-bar" style="width:4%; background:#993C1D;"></div>
+        <div style="font-size:11px; margin-top:4px; color:#333;">Major donors ($1K+): 253</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Innovation Campus campaign progress</div>
+      <div style="padding: 10px 0;">
+        <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--gray-600); margin-bottom:10px;">
+          <span>Raised</span><span>Goal: $2.5M</span>
+        </div>
+        <div class="gauge-bg"><div class="gauge-fill" style="width:68%; background:var(--green);"></div></div>
+        <div style="display:flex; justify-content:space-between; margin-top:8px;">
+          <span style="font-size:24px; font-weight:700; color:var(--green);">$1.7M</span>
+          <span style="font-size:13px; color:var(--gray-400); align-self:flex-end;">$800K remaining</span>
+        </div>
+      </div>
+      <div style="margin-top:20px;">
+        <div class="card-title">Giving by source</div>
+        <div class="chart-wrap" style="height:160px;"><canvas id="c9"></canvas></div>
+        <div class="legend" style="justify-content:center;">
+          <span class="legend-item"><span class="legend-dot" style="background:#2E75B6;"></span>Alumni $820K</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#548235;"></span>Corporate $480K</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#854F0B;"></span>Foundation $310K</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#7F77DD;"></span>Faculty $90K</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ==================== 6. ACCREDITATION ==================== -->
+<div class="section">
+  <div>
+    <span class="section-num">6</span>
+    <h2 class="section-title">Accreditation &amp; program quality</h2>
+  </div>
+  <p class="section-desc">Traffic-light compliance matrix across all five accrediting bodies, and a 5-year licensure pass rate trend with the 80% threshold line.</p>
+
+  <div class="card">
+    <div class="card-title">Compliance status by accrediting body</div>
+    <table>
+      <thead><tr><th>Accreditor</th><th>Program</th><th>Grad rate</th><th>Licensure</th><th>Placement</th><th>Faculty cred.</th><th>Field hours</th><th>Overall</th></tr></thead>
+      <tbody>
+        <tr><td style="font-weight:600;">CSWE</td><td>Social Work</td><td><span class="status-dot" style="background:var(--green);"></span>72%</td><td><span class="status-dot" style="background:var(--green);"></span>91%</td><td><span class="status-dot" style="background:#EF9F27;"></span>78%</td><td><span class="status-dot" style="background:var(--green);"></span>100%</td><td><span class="status-dot" style="background:var(--green);"></span>100%</td><td style="font-weight:600;" class="warn">4/5</td></tr>
+        <tr><td style="font-weight:600;">ACEND</td><td>Dietetics</td><td><span class="status-dot" style="background:var(--green);"></span>80%</td><td><span class="status-dot" style="background:var(--red);"></span>72%</td><td><span class="status-dot" style="background:var(--green);"></span>85%</td><td><span class="status-dot" style="background:var(--green);"></span>100%</td><td><span class="status-dot" style="background:#EF9F27;"></span>92%</td><td style="font-weight:600;" class="down">3/5</td></tr>
+        <tr><td style="font-weight:600;">CAATE</td><td>Athletic Training</td><td><span class="status-dot" style="background:var(--green);"></span>88%</td><td><span class="status-dot" style="background:var(--green);"></span>94%</td><td><span class="status-dot" style="background:var(--green);"></span>90%</td><td><span class="status-dot" style="background:var(--green);"></span>100%</td><td><span class="status-dot" style="background:var(--green);"></span>100%</td><td style="font-weight:600;" class="up">5/5</td></tr>
+        <tr><td style="font-weight:600;">CEPH</td><td>Public Health</td><td><span class="status-dot" style="background:#EF9F27;"></span>65%</td><td><span class="status-dot" style="background:var(--red);"></span>64%†</td><td><span class="status-dot" style="background:var(--red);"></span>71%</td><td><span class="status-dot" style="background:var(--green);"></span>100%</td><td><span class="status-dot" style="background:var(--green);"></span>100%</td><td style="font-weight:600;" class="down">2/5</td></tr>
+      </tbody>
+    </table>
+    <div class="legend" style="margin-top:12px;">
+      <span class="legend-item"><span class="status-dot" style="background:var(--green);"></span>Meets standard</span>
+      <span class="legend-item"><span class="status-dot" style="background:#EF9F27;"></span>Approaching threshold</span>
+      <span class="legend-item"><span class="status-dot" style="background:var(--red);"></span>Below standard</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Licensure pass rates — 5-year trend</div>
+    <div class="chart-wrap" style="height: 220px;"><canvas id="c10"></canvas></div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background:#2E75B6;"></span>Social Work (ASWB)</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#E24B4A;"></span>Dietetics (CDR)</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#548235;"></span>Athletic Training (BOC)</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#7F77DD;"></span>Public Health (CPH†)</span>
+    </div>
+    <div style="font-size:11px; color:var(--gray-400); margin-top:6px;">† CPH (Certified in Public Health, NBPHE) is a voluntary certification, not a mandatory licensure exam.</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ==================== 7. COMMUNICATION ==================== -->
+<div class="section">
+  <div>
+    <span class="section-num">7</span>
+    <h2 class="section-title">Strategic communication — Dean's data brief</h2>
+  </div>
+  <p class="section-desc">A one-page "SAS at a Glance" data brief mockup suitable for Administrative Musings or Triple P Committee.</p>
+
+  <div class="brief-card">
+    <div class="brief-header">
+      <div>
+        <div style="font-family:var(--font-serif); font-size:20px; color:var(--navy);">SAS at a glance — Spring 2026</div>
+        <div style="font-size:12px; color:var(--gray-400);">School of Applied Sciences &bull; Applied Analytics Lab</div>
+      </div>
+      <div style="font-size:12px; color:var(--gray-400);">March 2026</div>
+    </div>
+
+    <div class="metrics" style="grid-template-columns: repeat(3,1fr); margin-bottom:16px;">
+      <div class="metric" style="text-align:center;"><div class="val">1,842</div><div class="label" style="margin-top:4px;">Total enrollment</div><div class="delta down">-3.2% YoY</div></div>
+      <div class="metric" style="text-align:center;"><div class="val">84.2%</div><div class="label" style="margin-top:4px;">Retention rate</div><div class="delta down">-2.4 pts vs. UM</div></div>
+      <div class="metric" style="text-align:center;"><div class="val">71.7%</div><div class="label" style="margin-top:4px;">6-yr graduation rate</div><div class="delta up">+3.2 pts (2018 cohort)</div></div>
+    </div>
+    <div class="metrics" style="grid-template-columns: repeat(3,1fr);">
+      <div class="metric" style="text-align:center;"><div class="val">$24.3M</div><div class="label" style="margin-top:4px;">Revenue (FY26)</div><div class="delta up">+3.1%</div></div>
+      <div class="metric" style="text-align:center;"><div class="val">3/5</div><div class="label" style="margin-top:4px;">Accreditations green</div><div class="delta warn">2 need attention</div></div>
+      <div class="metric" style="text-align:center;"><div class="val">$1.7M</div><div class="label" style="margin-top:4px;">Innovation Campus</div><div class="delta">68% of $2.5M goal</div></div>
+    </div>
+
+    <div style="border-top:1px solid var(--gray-200); padding-top:14px; margin-top:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px;">
+        <div style="flex:1;">
+          <div style="font-size:11px; font-weight:600; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Degrees conferred — In-person vs. Online (FY21–FY25)</div>
+          <div class="chart-wrap" style="height:150px;"><canvas id="c15"></canvas></div>
+          <div class="legend" style="margin-top:6px;">
+            <span class="legend-item"><span class="legend-dot" style="background:#1F3864;"></span>In-person</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#2E75B6;"></span>Online</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#1F386455; width:18px; border-radius:2px;"></span>Total (line)</span>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px; min-width:160px;">
+          <div class="metric" style="text-align:center;">
+            <div class="val" style="font-size:20px;">422</div>
+            <div class="label" style="margin-top:2px;">Degrees conferred (FY25)</div>
+            <div class="delta up">+11.1% vs. FY21</div>
+          </div>
+          <div class="metric" style="text-align:center;">
+            <div class="val" style="font-size:20px; color:var(--blue);">30%</div>
+            <div class="label" style="margin-top:2px;">Online share (FY25)</div>
+            <div class="delta up">+8.4 pts vs. FY21</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--gray-200); padding-top:14px; margin-top:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px;">
+        <div style="flex:1;">
+          <div style="font-size:11px; font-weight:600; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Degrees by credential level (FY21–FY25)</div>
+          <div class="chart-wrap" style="height:150px;"><canvas id="c16"></canvas></div>
+          <div class="legend" style="margin-top:6px;">
+            <span class="legend-item"><span class="legend-dot" style="background:#548235;"></span>Bachelor's</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#2E75B6;"></span>Master's</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#EF9F27;"></span>Certificate</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#A8A59E;"></span>Minor</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#1F3864;"></span>PhD</span>
+          </div>
+        </div>
+        <div style="min-width:160px;">
+          <div style="font-size:11px; font-weight:600; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">FY25 breakdown</div>
+          <table style="font-size:12px; width:100%;">
+            <tbody>
+              <tr><td><span class="legend-dot" style="background:#548235; display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:4px;"></span>Bachelor's</td><td style="text-align:right; font-weight:600;">280</td><td style="text-align:right; color:var(--gray-400);">66%</td></tr>
+              <tr><td><span class="legend-dot" style="background:#2E75B6; display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:4px;"></span>Master's</td><td style="text-align:right; font-weight:600;">85</td><td style="text-align:right; color:var(--gray-400);">20%</td></tr>
+              <tr><td><span class="legend-dot" style="background:#EF9F27; display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:4px;"></span>Certificate</td><td style="text-align:right; font-weight:600;">35</td><td style="text-align:right; color:var(--gray-400);">8%</td></tr>
+              <tr><td><span class="legend-dot" style="background:#A8A59E; display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:4px;"></span>Minor</td><td style="text-align:right; font-weight:600;">18</td><td style="text-align:right; color:var(--gray-400);">4%</td></tr>
+              <tr style="border-top:1px solid var(--gray-100);"><td><span class="legend-dot" style="background:#1F3864; display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:4px;"></span>PhD</td><td style="text-align:right; font-weight:600;">4</td><td style="text-align:right; color:var(--gray-400);">1%</td></tr>
+              <tr style="border-top:2px solid var(--gray-200);"><td style="font-weight:600;">Total</td><td style="text-align:right; font-weight:700;">422</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:13px; color:var(--gray-600); border-top:1px solid var(--gray-200); padding-top:14px; margin-top:14px; line-height:1.7;">
+      <strong style="color:var(--navy);">Key actions:</strong> (1) Address Social Work &amp; Nutrition & Hospitality Management (NHM) enrollment decline — labor demand is strong. (2) Dietetics licensure pass rate trending below 80% threshold — immediate intervention needed. (3) Two departments flagged for workload inequity. (4) Online degrees grew from 82 to 128 (+56%) — expand capacity to meet growing demand.
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ==================== 9. CHAIR EFFICIENCY ==================== -->
+<div class="section">
+  <div>
+    <span class="section-num">9</span>
+    <h2 class="section-title">Department chair monthly dashboard</h2>
+  </div>
+  <p class="section-desc">An automated monthly department dashboard for Social Work showing enrollment, credit hours, budget burn-down, and individual faculty load distributions.</p>
+
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <div>
+        <div style="font-size:16px; font-weight:600; color:var(--navy);">Social Work — March 2026</div>
+        <div style="font-size:12px; color:var(--gray-400);">Auto-generated monthly report</div>
+      </div>
+      <div style="font-size:12px; color:var(--blue); cursor:pointer; font-weight:500;">Export PDF ↗</div>
+    </div>
+
+    <div class="dept-dash">
+      <div class="metric"><div class="label">Current enrollment</div><div class="val">352</div><div class="delta down">-4.1% vs. last year</div></div>
+      <div class="metric"><div class="label">Credit hours produced</div><div class="val">4,224</div><div class="delta">Avg 12.0 per student</div></div>
+      <div class="metric"><div class="label">Faculty (FT / PT)</div><div class="val">14 / 6</div><div class="delta">Ratio: 17.6:1</div></div>
+      <div class="metric"><div class="label">Budget utilization</div><div class="val">67%</div><div class="delta">$1.34M of $2.0M</div></div>
+    </div>
+
+    <div class="charts">
+      <div>
+        <div class="card-title">Enrollment trend (monthly)</div>
+        <div class="chart-wrap" style="height:180px;"><canvas id="c11"></canvas></div>
+      </div>
+      <div>
+        <div class="card-title">Budget burn-down</div>
+        <div class="chart-wrap" style="height:180px;"><canvas id="c12"></canvas></div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#2E75B6;"></span>Actual</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--gray-400); opacity:0.5;"></span>Planned</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-title">Faculty load distribution (Spring 2026)</div>
+    <table>
+      <thead><tr><th>Faculty</th><th>Rank</th><th>Courses</th><th>Credit hrs</th><th>Load</th><th>Research ($)</th><th>Publications</th><th>Diss./Thesis</th><th>Awards</th></tr></thead>
+      <tbody>
+        <tr><td>J. Williams</td><td>Professor</td><td>2</td><td>6</td><td><div class="bar-bg" style="width:90px; display:inline-block;"><div class="bar-fill" style="width:40%; background:var(--green);"></div></div></td><td>$125K (PI)</td><td>4</td><td>3 (2 PhD, 1 MS)</td><td>Best Paper, SWK 2025</td></tr>
+        <tr><td>M. Chen</td><td>Assoc Prof</td><td>4</td><td>12</td><td><div class="bar-bg" style="width:90px; display:inline-block;"><div class="bar-fill" style="width:80%; background:#EF9F27;"></div></div></td><td>$45K (Co-PI)</td><td>2</td><td>1 (1 MS)</td><td>—</td></tr>
+        <tr><td>R. Thompson</td><td>Asst Prof</td><td>5</td><td>15</td><td><div class="bar-bg" style="width:90px; display:inline-block;"><div class="bar-fill" style="width:100%; background:var(--red);"></div></div></td><td>—</td><td>1</td><td>—</td><td>—</td></tr>
+        <tr><td>K. Davis</td><td>Instructor</td><td>5</td><td>15</td><td><div class="bar-bg" style="width:90px; display:inline-block;"><div class="bar-fill" style="width:100%; background:var(--red);"></div></div></td><td>—</td><td>—</td><td>—</td><td>Teaching Excellence 2024</td></tr>
+        <tr><td>S. Patel</td><td>Assoc Prof</td><td>3</td><td>9</td><td><div class="bar-bg" style="width:90px; display:inline-block;"><div class="bar-fill" style="width:60%; background:var(--green);"></div></div></td><td>$82K (PI)</td><td>3</td><td>2 (1 PhD, 1 MS)</td><td>Faculty Research Award 2025</td></tr>
+      </tbody>
+    </table>
+    <div style="font-size:11px; color:var(--gray-400); margin-top:8px;">Equity ratio: 2.50x (max/min) — flagged for review</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ==================== 10. NEWSLETTER SUMMARY ==================== -->
+<div class="section">
+  <div>
+    <span class="section-num">10</span>
+    <h2 class="section-title">Newsletter intelligence summary</h2>
+  </div>
+  <p class="section-desc">Automated digest of recurring themes, department mentions, and key action items across the SAS Student Newsletter and Administrative Musings (Spring 2026).</p>
+
+  <div class="charts">
+
+    <!-- STUDENT NEWSLETTER -->
+    <div>
+      <div style="background:var(--blue); color:#fff; border-radius:var(--radius-sm); padding:10px 16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-size:13px; font-weight:700;">Student Newsletter</div>
+          <div style="font-size:11px; opacity:0.8;">youbelong@olemiss.edu &bull; March 2026</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:26px; font-weight:700; line-height:1;">3</div>
+          <div style="font-size:10px; opacity:0.8;">issues &bull; Mar 4, 18, 25</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px;">
+        <div class="metric"><div class="label">Total items</div><div class="val" style="font-size:20px;">20</div></div>
+        <div class="metric"><div class="label">Unique topics</div><div class="val" style="font-size:20px;">7</div></div>
+        <div class="metric"><div class="label">Deadlines tracked</div><div class="val" style="font-size:20px;">5</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Topic frequency (out of 3 issues)</div>
+        <div class="chart-wrap" style="height:190px;"><canvas id="c17"></canvas></div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="card-title">Upcoming events &amp; deadlines from newsletters</div>
+        <table>
+          <thead><tr><th>Date</th><th>Item</th><th>Dept</th></tr></thead>
+          <tbody>
+            <tr><td>Mar 27</td><td>GSSWO Spring Merch closes; NHM 468 Chicago app. deadline</td><td>SW / NHM</td></tr>
+            <tr><td>Apr 3</td><td>NHM 468 Las Vegas application deadline</td><td>NHM</td></tr>
+            <tr><td>Apr 7</td><td>Public Health Career &amp; Internship Fair — Johnson Commons</td><td>PH</td></tr>
+            <tr><td>May 6</td><td>SAS Master's Commencement, 3:30pm — Black Pavilion</td><td>All</td></tr>
+            <tr><td>May 9</td><td>SAS Undergraduate Commencement, 11am — Black Pavilion</td><td>All</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ADMIN MUSINGS -->
+    <div>
+      <div style="background:var(--navy); color:#fff; border-radius:var(--radius-sm); padding:10px 16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-size:13px; font-weight:700;">Administrative Musings</div>
+          <div style="font-size:11px; opacity:0.8;">Dean Czech &bull; Aug 2025 – Mar 2026</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:26px; font-weight:700; line-height:1;">4</div>
+          <div style="font-size:10px; opacity:0.8;">issues reviewed</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px;">
+        <div class="metric"><div class="label">Strategic goals</div><div class="val" style="font-size:20px;">6</div></div>
+        <div class="metric"><div class="label">Action items</div><div class="val" style="font-size:20px;">12</div></div>
+        <div class="metric"><div class="label">Faculty recognized</div><div class="val" style="font-size:20px; color:var(--green);">2</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Theme frequency (out of 4 issues)</div>
+        <div class="chart-wrap" style="height:190px;"><canvas id="c18"></canvas></div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="card-title">Key highlights &amp; action items</div>
+        <table>
+          <thead><tr><th>Category</th><th>Item</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Personnel</td><td>Dr. Ford Wade — permanent Public Health Chair</td><td><span class="pill pill-green">Confirmed</span></td></tr>
+            <tr><td>Recognition</td><td>Dr. Park (CSD) &amp; Dr. Holben (NHM) — Chancellor's Research Award</td><td><span class="pill pill-green">Awarded</span></td></tr>
+            <tr><td>Budget</td><td>FY2027 permanent personnel &amp; budget submissions</td><td><span class="pill pill-red">Due Mar 27</span></td></tr>
+            <tr><td>Research</td><td>SPARK internal grants program launched</td><td><span class="pill pill-green">Active</span></td></tr>
+            <tr><td>AI</td><td>AI Task Force meeting; Applied AI Minor advancing</td><td><span class="pill pill-yellow">In progress</span></td></tr>
+            <tr><td>Facility</td><td>NHM relocation RFQ — 10 submissions, review underway</td><td><span class="pill pill-yellow">In progress</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Department mentions -->
+  <div class="card" style="margin-top:4px;">
+    <div class="card-title">Department mentions across all 7 newsletter issues (Student NL + Admin Musings)</div>
+    <div class="chart-wrap" style="height:180px;"><canvas id="c19"></canvas></div>
+    <div class="legend" style="margin-top:8px; justify-content:center;">
+      <span class="legend-item"><span class="legend-dot" style="background:#2E75B6;"></span>Student Newsletter</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#1F3864;"></span>Administrative Musings</span>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div style="font-size:11px; color:var(--gray-400); margin-bottom:6px;">All data in this document is hypothetical and for illustration purposes only. If you have any question, please contact Dr. Sian Lee (slee63@olemiss.edu) </div>
+  Applied Analytics Lab &bull; School of Applied Sciences &bull; University of Mississippi &bull; March 2026
+</div>
+
+</div><!-- /container -->
+
+<script>
+const txtC = '#73726c';
+const gridC = 'rgba(0,0,0,0.05)';
+const defaults = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+
+// 1a. Retention bar
+new Chart(document.getElementById('c1'), {
+  type: 'bar',
+  data: { labels: ['CSD','NHM','Social Work','HESRM','CJLS','Pub Health'], datasets: [{ data: [81.5,82.3,85.1,86.0,88.4,78.9], backgroundColor: '#2E75B6', borderRadius: 4, barPercentage: 0.6 }] },
+  options: { ...defaults, scales: { y: { min:70,max:95, grid:{color:gridC}, ticks:{color:txtC,font:{size:11}} }, x: { grid:{display:false}, ticks:{color:txtC,font:{size:11},autoSkip:false,maxRotation:30} } } },
+  plugins: [{ afterDraw(c) { const ctx=c.ctx,y=c.scales.y.getPixelForValue(86.6),x=c.scales.x; ctx.save(); ctx.strokeStyle='#E24B4A'; ctx.lineWidth=1.5; ctx.setLineDash([6,4]); ctx.beginPath(); ctx.moveTo(x.left,y); ctx.lineTo(x.right,y); ctx.stroke(); ctx.fillStyle='#E24B4A'; ctx.font='11px sans-serif'; ctx.fillText('UM 86.6%',x.right-66,y-6); ctx.restore(); } }]
+});
+
+// 1b. Risk doughnut
+new Chart(document.getElementById('c2'), { type:'doughnut', data:{ labels:['High','Medium','Low'], datasets:[{ data:[62,47,18], backgroundColor:['#E24B4A','#EF9F27','#548235'], borderWidth:0 }] }, options:{ ...defaults, cutout:'55%' } });
+
+// 2a. Enrollment forecast
+new Chart(document.getElementById('c3'), {
+  type:'line',
+  data:{ labels:['F21','F22','F23','F24','F25','F26*','F27*','F28*'], datasets:[
+    { label:'Social Work', data:[410,395,380,365,352,338,325,312], borderColor:'#2E75B6', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
+    { label:'HESM', data:[320,328,335,340,348,355,362,370], borderColor:'#548235', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
+    { label:'CJLS', data:[280,290,300,315,330,340,352,365], borderColor:'#854F0B', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
+    { label:'NHM', data:[230,225,218,210,204,196,190,183], borderColor:'#E24B4A', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
+    { label:'CSD', data:[202,203,204,205,206,207,208,209], borderColor:'#7F77DD', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
+    { label:'Pub Health', data:[195,185,174,164,153,143,133,124], borderColor:'#D85A30', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
+  ] },
+  options:{ ...defaults, scales:{ y:{min:100,max:450,grid:{color:gridC},ticks:{color:txtC,font:{size:11}}}, x:{grid:{display:false},ticks:{color:txtC,font:{size:11},autoSkip:false}} } }
+});
+
+// 2b. Scatter
+new Chart(document.getElementById('c4'), {
+  type:'scatter',
+  data:{ datasets:[{ data:[{x:12.3,y:-4.1},{x:15.1,y:-2.8},{x:10.2,y:1.2},{x:8.8,y:0.3},{x:5.9,y:2.5},{x:6.4,y:-5.3}], backgroundColor:['#2E75B6','#E24B4A','#548235','#7F77DD','#854F0B','#D85A30'], pointRadius:[18,12,16,14,15,11] }] },
+  options:{ ...defaults, plugins:{legend:{display:false},tooltip:{enabled:false}}, scales:{x:{title:{display:true,text:'MS job growth 2024-34 (%)',color:txtC,font:{size:11}},min:3,max:18,grid:{color:gridC},ticks:{color:txtC,font:{size:11}}},y:{title:{display:true,text:'Enrollment change/yr (%)',color:txtC,font:{size:11}},min:-6,max:4,grid:{color:gridC},ticks:{color:txtC,font:{size:11}}}}, layout:{padding:20} },
+  plugins:[{ afterDraw(c) { const ctx=c.ctx,pts=c.getDatasetMeta(0).data,lbls=['Social Work','NHM','HESRM','CSD','CJLS','Pub Health']; ctx.font='11px sans-serif'; ctx.fillStyle=txtC; pts.forEach((p,i)=>ctx.fillText(lbls[i],p.x+14,p.y-6)); const y0=c.scales.y.getPixelForValue(0),xs=c.scales.x; ctx.strokeStyle='rgba(0,0,0,0.12)'; ctx.lineWidth=1; ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(xs.left,y0); ctx.lineTo(xs.right,y0); ctx.stroke(); ctx.setLineDash([]); } }]
+});
+
+// 3a. Teaching load
+new Chart(document.getElementById('c5'), {
+  type:'bar',
+  data:{ labels:['Social Work','CSD','NHM','HESRM','CJLS','Pub Health'], datasets:[
+    { label:'Max', data:[15,14,12,12,13,17], backgroundColor:'#E24B4A88', borderRadius:3, barPercentage:0.5 },
+    { label:'Avg', data:[11.2,10.8,10.5,9.8,11.5,12.3], backgroundColor:'#2E75B6', borderRadius:3, barPercentage:0.5 },
+    { label:'Min', data:[6,8,9,6,10,5], backgroundColor:'#73726c88', borderRadius:3, barPercentage:0.5 },
+  ] },
+  options:{ ...defaults, scales:{ y:{min:0,max:18,grid:{color:gridC},ticks:{color:txtC,font:{size:11}}}, x:{grid:{display:false},ticks:{color:txtC,font:{size:10},autoSkip:false,maxRotation:30}} } }
+});
+
+// 3b. Retirement
+new Chart(document.getElementById('c6'), {
+  type:'bar',
+  data:{ labels:['Social Work','CSD','NHM','HESRM','CJLS','Pub Health'], datasets:[
+    { label:'26-27', data:[1,0,1,2,0,2], backgroundColor:'#EF9F27', borderRadius:3, barPercentage:0.6 },
+    { label:'28-29', data:[2,1,0,1,1,3], backgroundColor:'#D85A30', borderRadius:3, barPercentage:0.6 },
+    { label:'30-31', data:[1,2,1,1,0,2], backgroundColor:'#993C1D', borderRadius:3, barPercentage:0.6 },
+  ] },
+  options:{ ...defaults, scales:{ y:{stacked:true,grid:{color:gridC},ticks:{color:txtC,font:{size:11},stepSize:1}}, x:{stacked:true,grid:{display:false},ticks:{color:txtC,font:{size:10},autoSkip:false,maxRotation:30}} } }
+});
+
+// 4a. Cost bubble
+new Chart(document.getElementById('c7'), {
+  type:'bubble',
+  data:{ datasets:[{ data:[{x:352,y:55.2,r:12},{x:204,y:52.8,r:10},{x:348,y:41.5,r:14},{x:210,y:46.3,r:11},{x:330,y:43.0,r:16},{x:158,y:59.1,r:7}], backgroundColor:['#2E75B6aa','#E24B4Aaa','#548235aa','#854F0Baa','#7F77DDaa','#D85A30aa'] }] },
+  options:{ ...defaults, plugins:{legend:{display:false},tooltip:{enabled:false}}, scales:{x:{title:{display:true,text:'Enrollment',color:txtC,font:{size:11}},min:150,max:400,grid:{color:gridC},ticks:{color:txtC,font:{size:11}}},y:{title:{display:true,text:'Cost per degree ($K)',color:txtC,font:{size:11}},min:35,max:60,grid:{color:gridC},ticks:{color:txtC,font:{size:11}}}}, layout:{padding:20} },
+  plugins:[{ afterDraw(c) { const ctx=c.ctx,pts=c.getDatasetMeta(0).data,lbls=['Social Work','CSD','NHM','HESRM','CJLS','Pub Health']; ctx.font='11px sans-serif'; ctx.fillStyle=txtC; pts.forEach((p,i)=>ctx.fillText(lbls[i],p.x+12,p.y-8)); } }]
+});
+
+// 4b. Revenue waterfall
+new Chart(document.getElementById('c8'), {
+  type:'bar',
+  data:{ labels:['Social Work -15%','NHM -10%','HESRM +5%','CSD -5%','CJLS +10%','Pub Health -20%'], datasets:[{ data:[-420,-180,150,-95,280,-560], backgroundColor:ctx=>ctx.raw<0?'#E24B4Aaa':'#548235aa', borderRadius:4, barPercentage:0.6 }] },
+  options:{ ...defaults, scales:{ y:{grid:{color:gridC},ticks:{color:txtC,font:{size:11},callback:v=>(v<0?'-':'')+'$'+Math.abs(v)+'K'}}, x:{grid:{display:false},ticks:{color:txtC,font:{size:9},autoSkip:false,maxRotation:35}} } }
+});
+
+// 5. Giving donut
+new Chart(document.getElementById('c9'), { type:'doughnut', data:{ labels:['Alumni','Corporate','Foundation','Faculty'], datasets:[{data:[820,480,310,90],backgroundColor:['#2E75B6','#548235','#854F0B','#7F77DD'],borderWidth:0}] }, options:{...defaults,cutout:'50%'} });
+
+// 6. Licensure trend
+new Chart(document.getElementById('c10'), {
+  type:'line',
+  data:{ labels:['2021','2022','2023','2024','2025'], datasets:[
+    { label:'Social Work (ASWB)', data:[84,82,80,79,81], borderColor:'#2E75B6', borderWidth:2, pointRadius:3, tension:0.3 },
+    { label:'Dietetics', data:[78,75,73,70,72], borderColor:'#E24B4A', borderWidth:2, pointRadius:3, tension:0.3 },
+    { label:'Athletic Tr.', data:[92,91,93,94,94], borderColor:'#548235', borderWidth:2, pointRadius:3, tension:0.3 },
+    { label:'Public Health (CPH)', data:[66,63,65,61,64], borderColor:'#7F77DD', borderWidth:2, pointRadius:3, tension:0.3 },
+  ] },
+  options:{ ...defaults, scales:{ y:{min:60,max:100,grid:{color:gridC},ticks:{color:txtC,font:{size:11},callback:v=>v+'%'}}, x:{grid:{display:false},ticks:{color:txtC,font:{size:11}}} } },
+  plugins:[{ afterDraw(c) { const ctx=c.ctx,y80=c.scales.y.getPixelForValue(80),xs=c.scales.x; ctx.save(); ctx.strokeStyle='#E24B4A'; ctx.lineWidth=1; ctx.setLineDash([5,3]); ctx.beginPath(); ctx.moveTo(xs.left,y80); ctx.lineTo(xs.right,y80); ctx.stroke(); ctx.fillStyle='#E24B4A'; ctx.font='10px sans-serif'; ctx.fillText('80% threshold',xs.right-76,y80-5); ctx.restore(); } }]
+});
+
+// 9a. Enrollment monthly
+new Chart(document.getElementById('c11'), {
+  type:'line',
+  data:{ labels:['Sep','Oct','Nov','Dec','Jan','Feb','Mar'], datasets:[{ data:[365,362,358,355,354,353,352], borderColor:'#2E75B6', borderWidth:2, pointRadius:3, tension:0.3, fill:true, backgroundColor:'rgba(46,117,182,0.06)' }] },
+  options:{ ...defaults, scales:{ y:{min:340,max:375,grid:{color:gridC},ticks:{color:txtC,font:{size:10}}}, x:{grid:{display:false},ticks:{color:txtC,font:{size:10}}} } }
+});
+
+// 4c. Academic outreach revenue
+new Chart(document.getElementById('c13'), {
+  type: 'bar',
+  data: {
+    labels: ['FY21','FY22','FY23','FY24','FY25','FY26*','FY27*','FY28*','FY29*','FY30*'],
+    datasets: [
+      { label:'Social Work',  data:[520,560,590,620,640,650,660,665,670,680],   backgroundColor:'#2E75B6aa', stack:'s', yAxisID:'y' },
+      { label:'NHM',          data:[680,720,780,850,920,990,1050,1120,1200,1280], backgroundColor:'#E24B4Aaa', stack:'s', yAxisID:'y' },
+      { label:'HESRM',        data:[560,590,640,700,760,830,900,980,1060,1140],  backgroundColor:'#548235aa', stack:'s', yAxisID:'y' },
+      { label:'CSD',          data:[380,390,400,410,420,430,445,460,475,490],   backgroundColor:'#7F77DDaa', stack:'s', yAxisID:'y' },
+      { label:'CJLS',         data:[480,530,590,650,720,800,880,960,1050,1150], backgroundColor:'#854F0Baa', stack:'s', yAxisID:'y' },
+      { label:'Pub Health',   data:[180,220,270,330,390,460,530,620,720,820],   backgroundColor:'#D85A30aa', stack:'s', yAxisID:'y' },
+      { label:'% of Revenue', type:'line', data:[13,14,15,16,17,18,20,21,23,25],
+        borderColor:'#1F3864', borderWidth:2.5, pointRadius:3, pointBackgroundColor:'#1F3864',
+        tension:0.3, yAxisID:'y2', fill:false,
+        segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} }
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{mode:'index', intersect:false} },
+    scales: {
+      y:  { stacked:true, min:0, max:8000, position:'left',  grid:{color:gridC}, ticks:{color:txtC, font:{size:11}, callback:v=>'$'+(v/1000).toFixed(1)+'M'} },
+      y2: { min:0, max:40, position:'right', grid:{display:false}, ticks:{color:'#1F3864', font:{size:11}, callback:v=>v+'%'} },
+      x:  { stacked:true, grid:{display:false}, ticks:{color:txtC, font:{size:10}, autoSkip:false} }
+    }
+  },
+  plugins:[{ afterDraw(c) {
+    const ctx=c.ctx, xs=c.scales.x, ys=c.scales.y;
+    const xDiv=(xs.getPixelForValue(4)+xs.getPixelForValue(5))/2;
+    ctx.save();
+    ctx.fillStyle='rgba(0,0,0,0.03)';
+    ctx.fillRect(xDiv, ys.top, xs.right-xDiv, ys.bottom-ys.top);
+    ctx.strokeStyle='rgba(0,0,0,0.18)'; ctx.lineWidth=1; ctx.setLineDash([5,3]);
+    ctx.beginPath(); ctx.moveTo(xDiv,ys.top); ctx.lineTo(xDiv,ys.bottom); ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.font='10px sans-serif';
+    ctx.fillText('Projected →', xDiv+5, ys.top+13);
+    ctx.restore();
+  }}]
+});
+
+// 7b. Degrees by credential level
+new Chart(document.getElementById('c16'), {
+  type:'bar',
+  data:{ labels:['FY21','FY22','FY23','FY24','FY25'], datasets:[
+    { label:'Bachelor\'s', data:[272,275,278,280,280], backgroundColor:'#548235cc', stack:'s', borderRadius:3, barPercentage:0.65 },
+    { label:'Master\'s',   data:[72,75,79,82,85],     backgroundColor:'#2E75B6cc', stack:'s', borderRadius:3, barPercentage:0.65 },
+    { label:'Certificate', data:[22,26,30,33,35],     backgroundColor:'#EF9F27cc', stack:'s', borderRadius:3, barPercentage:0.65 },
+    { label:'Minor',       data:[12,16,18,16,18],     backgroundColor:'#A8A59Ecc', stack:'s', borderRadius:3, barPercentage:0.65 },
+    { label:'PhD',         data:[2,3,3,4,4],          backgroundColor:'#1F3864cc', stack:'s', borderRadius:3, barPercentage:0.65 },
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{mode:'index', intersect:false} },
+    scales:{
+      y:{ stacked:true, min:0, max:500, grid:{color:gridC}, ticks:{color:txtC, font:{size:10}, stepSize:100} },
+      x:{ stacked:true, grid:{display:false}, ticks:{color:txtC, font:{size:10}} }
+    }
+  }
+});
+
+// 7. Degrees conferred: in-person vs online
+new Chart(document.getElementById('c15'), {
+  type:'bar',
+  data:{ labels:['FY21','FY22','FY23','FY24','FY25'], datasets:[
+    { label:'In-person', data:[298,302,305,300,294], backgroundColor:'#1F3864cc', stack:'s', yAxisID:'y', borderRadius:3, barPercentage:0.65 },
+    { label:'Online',    data:[82,93,103,115,128],   backgroundColor:'#2E75B6cc', stack:'s', yAxisID:'y', borderRadius:3, barPercentage:0.65 },
+    { label:'Total', type:'line', data:[380,395,408,415,422], borderColor:'#1F386488', borderWidth:2, pointRadius:3, pointBackgroundColor:'#1F3864', tension:0.3, yAxisID:'y', fill:false }
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{mode:'index', intersect:false} },
+    scales:{
+      y:{ stacked:true, min:0, max:500, grid:{color:gridC}, ticks:{color:txtC, font:{size:10}, stepSize:100} },
+      x:{ stacked:true, grid:{display:false}, ticks:{color:txtC, font:{size:10}} }
+    }
+  }
+});
+
+// 4d. Outreach by department lines
+new Chart(document.getElementById('c14'), {
+  type:'line',
+  data:{ labels:['FY21','FY22','FY23','FY24','FY25','FY26*','FY27*','FY28*','FY29*','FY30*'], datasets:[
+    { label:'Social Work', data:[520,560,590,620,640,650,660,665,670,680], borderColor:'#2E75B6', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
+    { label:'NHM',         data:[680,720,780,850,920,990,1050,1120,1200,1280], borderColor:'#E24B4A', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
+    { label:'HESRM',       data:[560,590,640,700,760,830,900,980,1060,1140], borderColor:'#548235', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
+    { label:'CSD',         data:[380,390,400,410,420,430,445,460,475,490], borderColor:'#7F77DD', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
+    { label:'CJLS',        data:[480,530,590,650,720,800,880,960,1050,1150], borderColor:'#854F0B', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
+    { label:'Pub Health',  data:[180,220,270,330,390,460,530,620,720,820], borderColor:'#D85A30', borderWidth:2, pointRadius:2, tension:0.3, segment:{borderDash:ctx=>ctx.p0DataIndex>=4?[6,4]:undefined} },
+  ]},
+  options:{ ...defaults, scales:{ y:{min:0,max:1500,grid:{color:gridC},ticks:{color:txtC,font:{size:11},callback:v=>'$'+v+'K'}}, x:{grid:{display:false},ticks:{color:txtC,font:{size:10},autoSkip:false}} } },
+  plugins:[{ afterDraw(c) {
+    const ctx=c.ctx,xs=c.scales.x,ys=c.scales.y;
+    const xDiv=(xs.getPixelForValue(4)+xs.getPixelForValue(5))/2;
+    ctx.save(); ctx.fillStyle='rgba(0,0,0,0.03)';
+    ctx.fillRect(xDiv,ys.top,xs.right-xDiv,ys.bottom-ys.top);
+    ctx.strokeStyle='rgba(0,0,0,0.18)'; ctx.lineWidth=1; ctx.setLineDash([5,3]);
+    ctx.beginPath(); ctx.moveTo(xDiv,ys.top); ctx.lineTo(xDiv,ys.bottom); ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.font='10px sans-serif';
+    ctx.fillText('Projected →',xDiv+5,ys.top+13); ctx.restore();
+    // label each line at the right end
+    const lbls=['Social Work','NHM','HESRM','CSD','CJLS','Pub Health'];
+    const clrs=['#2E75B6','#E24B4A','#548235','#7F77DD','#854F0B','#D85A30'];
+    c.data.datasets.forEach((ds,i)=>{
+      const meta=c.getDatasetMeta(i); const last=meta.data[meta.data.length-1];
+      ctx.save(); ctx.fillStyle=clrs[i]; ctx.font='bold 10px sans-serif';
+      ctx.fillText(lbls[i],last.x+4,last.y+4); ctx.restore();
+    });
+  }}]
+});
+
+// 10a. Student newsletter topic frequency
+new Chart(document.getElementById('c17'), {
+  type:'bar',
+  data:{ labels:['Commencement','Academic Advising','Fundraising / Org','Events & Talks','Travel / Study Away','Scholarships','Awards & Recognition'],
+    datasets:[{ data:[3,3,3,3,2,1,1],
+      backgroundColor:['#2E75B6cc','#2E75B6cc','#2E75B6cc','#2E75B6cc','#2E75B688','#2E75B655','#2E75B655'],
+      borderRadius:4, barPercentage:0.6 }] },
+  options:{ ...defaults, indexAxis:'y',
+    scales:{ x:{min:0,max:3,grid:{color:gridC},ticks:{color:txtC,font:{size:10},stepSize:1,callback:v=>v+' / 3'}}, y:{grid:{display:false},ticks:{color:txtC,font:{size:11}}} } }
+});
+
+// 10b. Admin Musings theme frequency
+new Chart(document.getElementById('c18'), {
+  type:'bar',
+  data:{ labels:['Events & Deadlines','Strategic Goals','Leadership & Personnel','Research & Grants','Campus News','Student Success','Budget & Finance','AI & Innovation'],
+    datasets:[{ data:[4,4,4,4,4,3,3,2],
+      backgroundColor:['#1F3864cc','#1F3864cc','#1F3864cc','#1F3864cc','#1F3864cc','#1F386499','#1F386499','#1F386466'],
+      borderRadius:4, barPercentage:0.6 }] },
+  options:{ ...defaults, indexAxis:'y',
+    scales:{ x:{min:0,max:4,grid:{color:gridC},ticks:{color:txtC,font:{size:10},stepSize:1,callback:v=>v+' / 4'}}, y:{grid:{display:false},ticks:{color:txtC,font:{size:11}}} } }
+});
+
+// 10c. Department mentions (stacked: student NL + admin musings)
+new Chart(document.getElementById('c19'), {
+  type:'bar',
+  data:{ labels:['NHM','Public Health','Social Work','CSD','HESRM','CJLS'],
+    datasets:[
+      { label:'Student NL',     data:[2,3,3,2,1,0], backgroundColor:'#2E75B6cc', borderRadius:3, barPercentage:0.55, stack:'m' },
+      { label:'Admin Musings',  data:[4,3,1,2,2,2], backgroundColor:'#1F3864cc', borderRadius:3, barPercentage:0.55, stack:'m' },
+    ] },
+  options:{ ...defaults,
+    scales:{ y:{stacked:true,min:0,max:8,grid:{color:gridC},ticks:{color:txtC,font:{size:11},stepSize:1}},
+             x:{stacked:true,grid:{display:false},ticks:{color:txtC,font:{size:11}}} } }
+});
+
+// 9b. Budget burn
+new Chart(document.getElementById('c12'), {
+  type:'line',
+  data:{ labels:['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr*','May*','Jun*'], datasets:[
+    { label:'Actual', data:[2000,1880,1750,1620,1500,1400,1340,1280,1200,null,null,null], borderColor:'#2E75B6', borderWidth:2, pointRadius:2, tension:0.3, spanGaps:false },
+    { label:'Planned', data:[2000,1830,1670,1500,1330,1170,1000,830,670,500,330,170], borderColor:'#A8A59E', borderWidth:1.5, pointRadius:0, tension:0.3, borderDash:[5,3] },
+  ] },
+  options:{ ...defaults, scales:{ y:{min:0,max:2200,grid:{color:gridC},ticks:{color:txtC,font:{size:10},callback:v=>'$'+(v/1000).toFixed(1)+'M'}}, x:{grid:{display:false},ticks:{color:txtC,font:{size:9},autoSkip:false}} } }
+});
+</script>
+
+</body>
+</html>
